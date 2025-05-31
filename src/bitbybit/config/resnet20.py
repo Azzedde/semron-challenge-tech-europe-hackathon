@@ -149,3 +149,9 @@ resnet20_full_patch_config = {
         "hash_length": 4096
     }
 }
+
+
+# Can be modified for experiments (change hashing values..)
+submission_config_cifar10 =  resnet20_full_patch_config
+submission_config_cifar100 = resnet20_full_patch_config 
+
