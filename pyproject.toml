@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semron-submission-system"
+version = "0.1.0"
+description = "Secure submission system for SEMRON leaderboard"
+dependencies = [
+    "torch",
+    "torchvision",
+    "waitress==3.0.2",
+    "flask==2.3.3",
+    "cryptography==41.0.4",
+    "requests==2.31.0",
+    "streamlit==1.27.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+exclude = '''
+/(
+    \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.12"
