@@ -1,4 +1,4 @@
-# python train_example.py  --dataset CIFAR10 --batch-size 32  --epochs 1  --kernel random_projection
+# python train_example.py  --dataset CIFAR10 --batch-size 32  --epochs 1  --kernel learned_projection
 
 # python train_example.py --no-cuda --epochs 2 --kernel random_projection    #for cpu
 
@@ -10,6 +10,7 @@ from pathlib import Path
 
 import torch
 from torch import nn
+from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 
 from bitbybit.utils.models import get_backbone
 from bitbybit.utils.data import (
@@ -53,7 +54,7 @@ def parse_args():
         help="Learning rate for backbone weights"
     )
     parser.add_argument(
-        "--proj-lr", type=float, default=1e-4,
+        "--proj-lr", type=float, default=1e-5,
         help="Learning rate for projection matrices (learned kernel)"
     )
     parser.add_argument(
@@ -167,15 +168,21 @@ def main():
             pass
 
     # Define optimizers
-    weight_optim = torch.optim.Adam(
+    weight_optim = torch.optim.AdamW(
         weight_params, lr=args.weight_lr, weight_decay=5e-4
     )
+
+    scheduler = CosineAnnealingLR(weight_optim, T_max=args.epochs, eta_min=1e-5)
+    
+    
     if args.kernel == "learned_projection":
-        proj_optim = torch.optim.Adam(proj_params, lr=args.proj_lr)
+        proj_optim = torch.optim.AdamW(proj_params, lr=args.proj_lr)
     else:
         proj_optim = None  # No projection optimizer for random_projection
-
-    criterion = torch.nn.CrossEntropyLoss()
+        
+    proj_scheduler = torch.optim.lr_scheduler.StepLR(proj_optim, step_size=10, gamma=0.5)
+    criterion = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
+    
 
     # Training loop
     best_acc = 0.0
@@ -205,6 +212,7 @@ def main():
                 proj_optim.step()
             # Update backbone weights
             weight_optim.step()
+            scheduler.step()
 
             running_loss += loss.item() * inputs.size(0)
             _, predicted = outputs.max(1)
@@ -252,6 +260,7 @@ def main():
             best_acc = test_acc
             best_ckpt_name = f"{args.dataset.lower()}_resnet20.pth"
             best_save_path = OUTPUT_DIR / best_ckpt_name
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
             torch.save(hashed_model.state_dict(), best_save_path)
             print(f"*** New best model (Test Acc: {test_acc:.2f}%) saved to: {best_save_path} ***") 
 
