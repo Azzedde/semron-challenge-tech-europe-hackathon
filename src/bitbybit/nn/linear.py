@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
-from ._base import _HashableModule
+from _base import _HashableModule
 from bitbybit.kernel import _HashKernel, kernel_factory
 
 DEFAULT_KERNEL_TYPE = "random_projection"

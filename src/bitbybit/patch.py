@@ -2,14 +2,14 @@ from typing import Dict, Any, Optional
 
 import torch.nn as nn
 
-from .nn import HashLinear, HashConv2d, _HashableModule
+from nn import HashLinear, HashConv2d, _HashableModule
 
-from .kernel import (
+from kernel import (
     DEFAULT_KERNEL_TYPE as DEFAULT_GLOBAL_KERNEL_TYPE,
 )  # Use from kernel package
-from .kernel import DEFAULT_HASH_LENGTH as DEFAULT_GLOBAL_HASH_LENGTH
-from .kernel import DEFAULT_INPUT_TILE_SIZE as DEFAULT_GLOBAL_INPUT_TILE_SIZE
-from .kernel import DEFAULT_OUTPUT_TILE_SIZE as DEFAULT_GLOBAL_OUTPUT_TILE_SIZE
+from kernel import DEFAULT_HASH_LENGTH as DEFAULT_GLOBAL_HASH_LENGTH
+from kernel import DEFAULT_INPUT_TILE_SIZE as DEFAULT_GLOBAL_INPUT_TILE_SIZE
+from kernel import DEFAULT_OUTPUT_TILE_SIZE as DEFAULT_GLOBAL_OUTPUT_TILE_SIZE
 
 
 LayerConfig = Dict[str, Any]  # e.g., {"hash_length": 1024, "hash_kernel_type": "..."}

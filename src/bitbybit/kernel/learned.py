@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import math
 
-from ._base import _HashKernel
+from _base import _HashKernel
 
 
 class LearnedProjKernel(_HashKernel):
