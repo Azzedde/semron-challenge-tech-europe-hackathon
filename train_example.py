@@ -20,7 +20,12 @@ from bitbybit.utils.data import (
     CIFAR100_STD,
 )
 import bitbybit as bb
-from bitbybit.config.resnet20 import resnet20_full_patch_config
+# from bitbybit.config.resnet20 import resnet20_full_patch_config
+from bitbybit.config.resnet20 import (
+    submission_config_cifar10,
+    submission_config_cifar100,
+)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -75,9 +80,15 @@ def main():
     # Create save directory
     OUTPUT_DIR = args.save_dir
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    
+
+
+
+
 
     # Choose dataset-specific loaders and normalization
     if args.dataset == "CIFAR10":
+        patch_config = submission_config_cifar10
         train_loader, test_loader = get_loaders(
             dataset_name="CIFAR10",
             data_dir=Path(__file__).parent / "data",
@@ -89,6 +100,7 @@ def main():
         )
         num_classes = 10
     else:
+        patch_config = submission_config_cifar100
         train_loader, test_loader = get_loaders(
             dataset_name="CIFAR100",
             data_dir=Path(__file__).parent / "data",
@@ -103,7 +115,8 @@ def main():
     # Build backbone and patch with hashed layers
     model = get_backbone(f"{args.dataset.lower()}_resnet20")
     model = model.to(device)
-    hashed_model = bb.patch_model(model, config=resnet20_full_patch_config)
+    # hashed_model = bb.patch_model(model, config=resnet20_full_patch_config)
+    hashed_model = bb.patch_model(model, config=patch_config)
     hashed_model = hashed_model.to(device)
 
     # Separate parameters: backbone weights (if any require_grad) and projection matrices
@@ -119,6 +132,7 @@ def main():
         if args.kernel == "learned_projection":
             # LearnedProjKernel has attribute `projection_matrix` as nn.Parameter
             if hasattr(module, "projection_matrix") and isinstance(module.projection_matrix, nn.Parameter):
+                print(f"Found learned projection matrix in {module.__class__.__name__}")
                 proj_params.append(module.projection_matrix)
         else:
             # For random_projection, the projection is a buffer; we do not train it
