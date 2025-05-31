@@ -73,3 +73,6 @@ Submissions are unlimited within the 24‑hour window; the server keeps your bes
 ## Scoring
 
 Evaluation lives in `bitbybit.utils.score.calculate_submission_score`.
+
+## Run Scripts
+``` export PYTHONPATH="$PWD/src" ```

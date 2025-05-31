@@ -1,0 +1,24 @@
+type: task
+name: train
+
+# If `image` is not specified, dstack uses its default image
+python: "3.12"
+#image: dstackai/base:py3.13-0.7-cuda-12.1
+
+# Commands of the task
+commands:
+  - uv venv --python 3.12
+  - source .venv/bin/activate
+  - uv pip install -r pyproject.toml
+  - export PYTHONPATH="$PWD/src"
+  - python train_example.py  --dataset CIFAR10 --batch-size 16  --epochs 1 --kernel learned_projection
+  - ls -la /submission_checkpoints
+# Ports to forward
+ports:
+  - 8501
+
+
+resources:
+  # gpu: 24GB
+  gpu: A100:2
+  disk: 50GB

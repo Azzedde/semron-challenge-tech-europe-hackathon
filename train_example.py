@@ -1,6 +1,6 @@
-# python train.py  --dataset CIFAR10 --batch-size 32  --epochs 1  --kernel random_projection
+# python train_example.py  --dataset CIFAR10 --batch-size 32  --epochs 1  --kernel random_projection
 
-# python train.py --no-cuda --epochs 2 --kernel random_projection    #for cpu
+# python train_example.py --no-cuda --epochs 2 --kernel random_projection    #for cpu
 
 
 
@@ -21,7 +21,7 @@ from bitbybit.utils.data import (
 )
 import bitbybit as bb
 # from bitbybit.config.resnet20 import resnet20_full_patch_config
-from bitbybit.config.resnet20 import (
+from bitbybit.config.resnet20_custom import (
     submission_config_cifar10,
     submission_config_cifar100,
 )
@@ -62,28 +62,41 @@ def parse_args():
         help="Which projection kernel to use"
     )
     parser.add_argument(
-        "--save-dir", type=Path, default=Path("sampler_checkpoints"),
+        "--save-dir", type=Path, default=Path("submission_checkpoints"),
         help="Directory to save checkpoints"
     )
     parser.add_argument(
         "--no-cuda", action="store_true",
         help="Disable CUDA even if available"
     )
+    parser.add_argument(
+        "--no-mps", action="store_true",
+        help="Disable MPS even if available"
+    )
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
     use_cuda = torch.cuda.is_available() and not args.no_cuda
-    device = torch.device("cuda" if use_cuda else "cpu")
+    use_mps = torch.backends.mps.is_available()
+    if use_cuda:
+        device = torch.device("cuda")
+        use_gpu = True
+    elif use_mps:
+        device = torch.device("mps")
+        use_gpu = True
+    else:
+        device = torch.device("cpu")
+        use_gpu = False
+
     print(f"Using device: {device}")
 
     # Create save directory
     OUTPUT_DIR = args.save_dir
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    # print(f"Saving checkpoints to: {OUTPUT_DIR}")
     
-
-
-
 
 
     # Choose dataset-specific loaders and normalization
@@ -96,7 +109,7 @@ def main():
             mean=CIFAR10_MEAN,
             std=CIFAR10_STD,
             num_workers=2,
-            pin_memory=use_cuda,
+            pin_memory=use_gpu,
         )
         num_classes = 10
     else:
@@ -108,9 +121,18 @@ def main():
             mean=CIFAR100_MEAN,
             std=CIFAR100_STD,
             num_workers=2,
-            pin_memory=use_cuda,
+            pin_memory=use_gpu,
         )
         num_classes = 100
+   
+    #overwrite the resnet parameter
+    if args.kernel == "learned_projection":
+    
+        for layer_name, layer_cfg in patch_config.items():
+            # layer_cfg should be a dict with a "hash_kernel_type" key
+            if isinstance(layer_cfg, dict) and "hash_kernel_type" in layer_cfg:
+                layer_cfg["hash_kernel_type"] = "learned_projection"
+
 
     # Build backbone and patch with hashed layers
     model = get_backbone(f"{args.dataset.lower()}_resnet20")
@@ -130,9 +152,10 @@ def main():
                 weight_params.append(module.weight)
         # Handle projection parameters differently for random vs. learned
         if args.kernel == "learned_projection":
+        
             # LearnedProjKernel has attribute `projection_matrix` as nn.Parameter
             if hasattr(module, "projection_matrix") and isinstance(module.projection_matrix, nn.Parameter):
-                print(f"Found learned projection matrix in {module.__class__.__name__}")
+                # print(f"Found learned projection matrix in {module.__class__.__name__}")
                 proj_params.append(module.projection_matrix)
         else:
             # For random_projection, the projection is a buffer; we do not train it
@@ -155,6 +178,7 @@ def main():
     criterion = torch.nn.CrossEntropyLoss()
 
     # Training loop
+    best_acc = 0.0
     start_time = time.time()
     for epoch in range(1, args.epochs + 1):
         hashed_model.train()
@@ -224,16 +248,26 @@ def main():
         test_acc = 100.0 * test_correct / test_total
         print(f"[Epoch {epoch}] Test Acc: {test_acc:.2f}%")
 
+        if test_acc > best_acc:
+            best_acc = test_acc
+            best_ckpt_name = f"{args.dataset.lower()}_resnet20.pth"
+            best_save_path = OUTPUT_DIR / best_ckpt_name
+            torch.save(hashed_model.state_dict(), best_save_path)
+            print(f"*** New best model (Test Acc: {test_acc:.2f}%) saved to: {best_save_path} ***") 
+
     total_time = time.time() - start_time
     print(f"\nTraining completed in {total_time:.2f} seconds")
+    print(f"Best Test Acc across all epochs: {best_acc:.2f}%")
 
-    # Save final checkpoint
-    dataset_short = args.dataset.lower()
-    suffix = "learned" if args.kernel == "learned_projection" else "random"
-    ckpt_name = f"{dataset_short}_resnet20_{suffix}.pth"
-    save_path = OUTPUT_DIR / ckpt_name
-    torch.save(hashed_model.state_dict(), save_path)
-    print(f"Model saved to {save_path}")
+    
+
+    # # Save final checkpoint
+    # dataset_short = args.dataset.lower()
+    # suffix = "learned" if args.kernel == "learned_projection" else "random"
+    # ckpt_name = f"{dataset_short}_resnet20.pth"
+    # save_path = OUTPUT_DIR / ckpt_name
+    # torch.save(hashed_model.state_dict(), save_path)
+    # print(f"Model saved to {save_path}")
 
 
 if __name__ == "__main__":
