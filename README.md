@@ -19,7 +19,8 @@ software-track/
 ```
 
 ## Installation
-
+Do this step before installing other packages:
+```bash
 sudo apt-get update
 sudo apt-get install -y \
     python3-dev \
@@ -32,7 +33,8 @@ sudo apt-get install -y \
     libwebp-dev \
     libharfbuzz-dev \
     libfribidi-dev
-
+```
+Then do this:
 ```bash
 uv venv --python 3.12
 source .venv/bin/activate

@@ -1,7 +1,7 @@
 import torch
 import math
 
-from _base import _HashKernel
+from ._base import _HashKernel
 
 
 class RandomProjKernel(_HashKernel):

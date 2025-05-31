@@ -1,5 +1,5 @@
 try:
-    from random_proj import RandomProjKernel
+    from .random_proj import RandomProjKernel
 except ImportError:
     # For direct script execution
     from random_proj import RandomProjKernel
