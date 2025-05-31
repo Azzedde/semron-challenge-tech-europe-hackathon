@@ -191,3 +191,5 @@ submission_checkpoints/
 data/
 
 *.zip
+
+*.ipynb

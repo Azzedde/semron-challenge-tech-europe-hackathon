@@ -69,13 +69,27 @@ def parse_args():
         "--no-cuda", action="store_true",
         help="Disable CUDA even if available"
     )
+    parser.add_argument(
+        "--no-mps", action="store_true",
+        help="Disable MPS even if available"
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     use_cuda = torch.cuda.is_available() and not args.no_cuda
-    device = torch.device("cuda" if use_cuda else "cpu")
+    use_mps = torch.backends.mps.is_available()
+    if use_cuda:
+        device = torch.device("cuda")
+        use_gpu = True
+    elif use_mps:
+        device = torch.device("mps")
+        use_gpu = True
+    else:
+        device = torch.device("cpu")
+        use_gpu = False
+
     print(f"Using device: {device}")
 
     # Create save directory
@@ -95,7 +109,7 @@ def main():
             mean=CIFAR10_MEAN,
             std=CIFAR10_STD,
             num_workers=2,
-            pin_memory=use_cuda,
+            pin_memory=use_gpu,
         )
         num_classes = 10
     else:
@@ -107,7 +121,7 @@ def main():
             mean=CIFAR100_MEAN,
             std=CIFAR100_STD,
             num_workers=2,
-            pin_memory=use_cuda,
+            pin_memory=use_gpu,
         )
         num_classes = 100
    

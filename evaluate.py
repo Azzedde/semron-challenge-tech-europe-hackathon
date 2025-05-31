@@ -90,6 +90,11 @@ def parse_args():
         action="store_true",
         help="Disable CUDA even if available"
     )
+    parser.add_argument(
+        "--no-mps",
+        action="store_true",
+        help="Disable MPS even if available"
+    )
     return parser.parse_args()
 
 
@@ -136,7 +141,16 @@ def main():
 
     # 1) Device selection
     use_cuda = torch.cuda.is_available() and not args.no_cuda
-    device = torch.device("cuda" if use_cuda else "cpu")
+    use_mps = torch.backends.mps.is_available()
+    if use_cuda:
+        device = torch.device("cuda")
+        use_gpu = True
+    elif use_mps:
+        device = torch.device("mps")
+        use_gpu = True
+    else:
+        device = torch.device("cpu")
+        use_gpu = False
     print(f"Using device: {device}\n")
 
     # 2) Determine dataset (CIFAR10 vs. CIFAR100) and get test_loader
@@ -160,7 +174,7 @@ def main():
         mean=mean,
         std=std,
         num_workers=2,
-        pin_memory=use_cuda,
+        pin_memory=use_gpu,
     )
 
     # 3) Load the original backbone and move to device
