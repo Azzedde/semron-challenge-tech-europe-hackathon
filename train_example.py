@@ -21,7 +21,7 @@ from bitbybit.utils.data import (
 )
 import bitbybit as bb
 # from bitbybit.config.resnet20 import resnet20_full_patch_config
-from bitbybit.config.resnet20 import (
+from bitbybit.config.resnet20_custom import (
     submission_config_cifar10,
     submission_config_cifar100,
 )
@@ -141,7 +141,7 @@ def main():
         
             # LearnedProjKernel has attribute `projection_matrix` as nn.Parameter
             if hasattr(module, "projection_matrix") and isinstance(module.projection_matrix, nn.Parameter):
-                print(f"Found learned projection matrix in {module.__class__.__name__}")
+                # print(f"Found learned projection matrix in {module.__class__.__name__}")
                 proj_params.append(module.projection_matrix)
         else:
             # For random_projection, the projection is a buffer; we do not train it
@@ -239,7 +239,7 @@ def main():
     # Save final checkpoint
     dataset_short = args.dataset.lower()
     suffix = "learned" if args.kernel == "learned_projection" else "random"
-    ckpt_name = f"{dataset_short}_resnet20_{suffix}.pth"
+    ckpt_name = f"{dataset_short}_resnet20.pth"
     save_path = OUTPUT_DIR / ckpt_name
     torch.save(hashed_model.state_dict(), save_path)
     print(f"Model saved to {save_path}")
