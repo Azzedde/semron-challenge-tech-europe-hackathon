@@ -62,7 +62,7 @@ def parse_args():
         help="Which projection kernel to use"
     )
     parser.add_argument(
-        "--save-dir", type=Path, default=Path("sampler_checkpoints"),
+        "--save-dir", type=Path, default=Path("submission_checkpoints"),
         help="Directory to save checkpoints"
     )
     parser.add_argument(
@@ -80,10 +80,8 @@ def main():
     # Create save directory
     OUTPUT_DIR = args.save_dir
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    # print(f"Saving checkpoints to: {OUTPUT_DIR}")
     
-
-
-
 
 
     # Choose dataset-specific loaders and normalization
