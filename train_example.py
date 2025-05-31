@@ -178,6 +178,7 @@ def main():
     criterion = torch.nn.CrossEntropyLoss()
 
     # Training loop
+    best_acc = 0.0
     start_time = time.time()
     for epoch in range(1, args.epochs + 1):
         hashed_model.train()
@@ -247,16 +248,26 @@ def main():
         test_acc = 100.0 * test_correct / test_total
         print(f"[Epoch {epoch}] Test Acc: {test_acc:.2f}%")
 
+        if test_acc > best_acc:
+            best_acc = test_acc
+            best_ckpt_name = f"{args.dataset.lower()}_resnet20.pth"
+            best_save_path = OUTPUT_DIR / best_ckpt_name
+            torch.save(hashed_model.state_dict(), best_save_path)
+            print(f"*** New best model (Test Acc: {test_acc:.2f}%) saved to: {best_save_path} ***") 
+
     total_time = time.time() - start_time
     print(f"\nTraining completed in {total_time:.2f} seconds")
+    print(f"Best Test Acc across all epochs: {best_acc:.2f}%")
 
-    # Save final checkpoint
-    dataset_short = args.dataset.lower()
-    suffix = "learned" if args.kernel == "learned_projection" else "random"
-    ckpt_name = f"{dataset_short}_resnet20.pth"
-    save_path = OUTPUT_DIR / ckpt_name
-    torch.save(hashed_model.state_dict(), save_path)
-    print(f"Model saved to {save_path}")
+    
+
+    # # Save final checkpoint
+    # dataset_short = args.dataset.lower()
+    # suffix = "learned" if args.kernel == "learned_projection" else "random"
+    # ckpt_name = f"{dataset_short}_resnet20.pth"
+    # save_path = OUTPUT_DIR / ckpt_name
+    # torch.save(hashed_model.state_dict(), save_path)
+    # print(f"Model saved to {save_path}")
 
 
 if __name__ == "__main__":
