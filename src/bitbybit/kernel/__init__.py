@@ -2,7 +2,7 @@ import torch
 
 from ._base import _HashKernel
 from .learned import LearnedProjKernel
-from .random import RandomProjKernel
+from .random_proj import RandomProjKernel
 
 DEFAULT_KERNEL_TYPE: str | None = "random_projection"
 DEFAULT_HASH_LENGTH: int = 2**12
