@@ -20,6 +20,19 @@ software-track/
 
 ## Installation
 
+sudo apt-get update
+sudo apt-get install -y \
+    python3-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libtiff-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libwebp-dev \
+    libharfbuzz-dev \
+    libfribidi-dev
+
 ```bash
 uv venv --python 3.12
 source .venv/bin/activate
