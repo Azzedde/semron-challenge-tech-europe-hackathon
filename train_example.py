@@ -110,6 +110,15 @@ def main():
             pin_memory=use_cuda,
         )
         num_classes = 100
+   
+    #overwrite the resnet parameter
+    if args.kernel == "learned_projection":
+    
+        for layer_name, layer_cfg in patch_config.items():
+            # layer_cfg should be a dict with a "hash_kernel_type" key
+            if isinstance(layer_cfg, dict) and "hash_kernel_type" in layer_cfg:
+                layer_cfg["hash_kernel_type"] = "learned_projection"
+
 
     # Build backbone and patch with hashed layers
     model = get_backbone(f"{args.dataset.lower()}_resnet20")
@@ -129,6 +138,7 @@ def main():
                 weight_params.append(module.weight)
         # Handle projection parameters differently for random vs. learned
         if args.kernel == "learned_projection":
+        
             # LearnedProjKernel has attribute `projection_matrix` as nn.Parameter
             if hasattr(module, "projection_matrix") and isinstance(module.projection_matrix, nn.Parameter):
                 print(f"Found learned projection matrix in {module.__class__.__name__}")
