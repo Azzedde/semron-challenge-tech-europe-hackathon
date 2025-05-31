@@ -12,37 +12,37 @@ import getpass
 
 class Publisher:
     def __init__(self):
-        self.ignore_patterns = [
-            ".venv",
-            ".git/",
-            "__pycache__/",
-            "*.pyc",
-            ".DS_Store",
-            "node_modules/",
-            ".env",
-            "teams.json",
-            "submissions/",
-            "leaderboard/",
-            "tests",
-            "*.zip",
+        self.disabled_patterns = [
+            ".venv/",
         ]
 
-    def should_ignore(self, file_path):
-        """Check if file should be ignored based on ignore patterns"""
-        for pattern in self.ignore_patterns:
+        self.include_patterns = [
+            "src/",
+            "submission_checkpoints/",
+            "pyproject.toml",
+        ]
+
+    def should_include(self, file_path):
+        """Check if file should be included based on include patterns"""
+        file_path_str = str(file_path)
+
+        for pattern in self.disabled_patterns:
+            if file_path_str.startswith(pattern):
+                return False
+
+        for pattern in self.include_patterns:
             if pattern.endswith("/"):
-                # Directory pattern
-                if pattern[:-1] in file_path.parts:
+                # Directory pattern - check if file is within this directory
+                if file_path_str.startswith(pattern[:-1]):
                     return True
-            elif "*" in pattern:
-                # Wildcard pattern
-                if pattern.startswith("*"):
-                    if file_path.name.endswith(pattern[1:]):
-                        return True
             else:
-                # Exact match
-                if pattern in str(file_path):
+                # File pattern - check for exact match
+                if file_path_str == pattern:
                     return True
+                
+                if file_path_str.endswith(".py"):
+                    return True
+
         return False
 
     def create_zip(self, source_dir, zip_path):
@@ -53,7 +53,7 @@ class Publisher:
             source_path = Path(source_dir)
 
             for file_path in source_path.rglob("*"):
-                if file_path.is_file() and not self.should_ignore(
+                if file_path.is_file() and self.should_include(
                     file_path.relative_to(source_path)
                 ):
                     # Add file to zip with relative path
