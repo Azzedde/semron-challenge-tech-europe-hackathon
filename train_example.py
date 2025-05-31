@@ -21,7 +21,7 @@ from bitbybit.utils.data import (
 )
 import bitbybit as bb
 # from bitbybit.config.resnet20 import resnet20_full_patch_config
-from bitbybit.config.resnet20_custom import (
+from bitbybit.config.resnet20 import (
     submission_config_cifar10,
     submission_config_cifar100,
 )
@@ -167,8 +167,8 @@ def main():
             pass
 
     # Define optimizers
-    weight_optim = torch.optim.SGD(
-        weight_params, lr=args.weight_lr, momentum=0.9, weight_decay=5e-4
+    weight_optim = torch.optim.Adam(
+        weight_params, lr=args.weight_lr, weight_decay=5e-4
     )
     if args.kernel == "learned_projection":
         proj_optim = torch.optim.Adam(proj_params, lr=args.proj_lr)

@@ -11,14 +11,17 @@ commands:
   - source .venv/bin/activate
   - uv pip install -r pyproject.toml
   - export PYTHONPATH="$PWD/src"
-  - python train_example.py  --dataset CIFAR10 --batch-size 16  --epochs 1 --kernel learned_projection
+  - python train_example.py  --dataset CIFAR10 --batch-size 128  --epochs 1 --kernel learned_projection
   - ls -la /submission_checkpoints
 # Ports to forward
 ports:
   - 8501
 
+volumes:
+  - instance_path: /mnt/volume
+    path: /submission_checkpoints
 
 resources:
   # gpu: 24GB
-  gpu: A100:2
+  gpu: A10
   disk: 50GB
