@@ -1,6 +1,6 @@
-# python train.py  --dataset CIFAR10 --batch-size 32  --epochs 1  --kernel random_projection
+# python train_example.py  --dataset CIFAR10 --batch-size 32  --epochs 1  --kernel random_projection
 
-# python train.py --no-cuda --epochs 2 --kernel random_projection    #for cpu
+# python train_example.py --no-cuda --epochs 2 --kernel random_projection    #for cpu
 
 
 
@@ -70,6 +70,7 @@ def parse_args():
         help="Disable CUDA even if available"
     )
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
