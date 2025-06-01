@@ -10,5 +10,7 @@ ide: vscode
 # Uncomment to leverage spot instances
 #spot_policy: auto
 
+
+
 resources:
-  gpu: 24GB
+  gpu: A100
