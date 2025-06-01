@@ -1,6 +1,6 @@
 type: dev-environment
 # The name is optional, if not specified, generated randomly
-name: vscode
+name: vscode-dev
 
 python: "3.12"
 # Uncomment to use a custom Docker image
@@ -11,4 +11,4 @@ ide: vscode
 #spot_policy: auto
 
 resources:
-  gpu: 24GB
+  gpu: a100

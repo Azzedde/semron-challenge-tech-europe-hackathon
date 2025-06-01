@@ -188,6 +188,9 @@ cython_debug/
 .cursorindexingignore
 
 submission_checkpoints/
+submission_check2/
+quickstart/
+
 data/
 
 *.zip
